@@ -19,9 +19,9 @@ func (p *Podcast) AddItem(item *Item) {
 func (p *Podcast) Feed(options ...func(f *Feed) error) (*Feed, error) {
 	f := &Feed{
 		ItunesXMLNS:  itunesXMLNS,
-		ContentXMLNS: contentXMLNS
+		ContentXMLNS: contentXMLNS,
 		Version:      rssVersion,
-		Channel:      &Channel{
+		Channel: &Channel{
 			Title:       p.Title,
 			Description: p.Description,
 			Link:        p.Link,

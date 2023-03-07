@@ -162,7 +162,7 @@ type Feed struct {
 	ItunesXMLNS  string   `xml:"xmlns:itunes,attr"`
 	ContentXMLNS string   `xml:"xmlns:content,attr"`
 	Version      string   `xml:"version,attr"`
-	Channel *Channel
+	Channel      *Channel
 }
 
 // SetOptions sets options of given feed.
