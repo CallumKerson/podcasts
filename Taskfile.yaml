@@ -101,7 +101,6 @@ tasks:
       - mod:verify
       - fmt:check
       - vet
-      - test
       - ci:test
 
   clean:
