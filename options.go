@@ -45,8 +45,8 @@ func Complete(f *Feed) error {
 }
 
 // NewFeedURL sets itunes:new-feed-url of given feed.
-func NewFeedURL(newURL string) func(f *Feed) error {
-	return func(f *Feed) error {
+func NewFeedURL(newURL string) func(feed *Feed) error {
+	return func(feed *Feed) error {
 		u, err := url.Parse(newURL)
 		if err != nil {
 			return err
@@ -54,15 +54,15 @@ func NewFeedURL(newURL string) func(f *Feed) error {
 		if !u.IsAbs() {
 			return ErrInvalidURL
 		}
-		f.Channel.NewFeedURL = newURL
+		feed.Channel.NewFeedURL = newURL
 		return nil
 	}
 }
 
 // Subtitle sets itunes:subtitle of given feed.
-func Subtitle(subtitle string) func(f *Feed) error {
-	return func(f *Feed) error {
-		f.Channel.Subtitle = subtitle
+func Subtitle(subtitle string) func(feed *Feed) error {
+	return func(feed *Feed) error {
+		feed.Channel.Subtitle = subtitle
 		return nil
 	}
 }
@@ -76,9 +76,9 @@ func Summary(summary string) func(f *Feed) error {
 }
 
 // Owner sets itunes:owner of given feed.
-func Owner(name string, email string) func(f *Feed) error {
-	return func(f *Feed) error {
-		f.Channel.Owner = &ItunesOwner{
+func Owner(name, email string) func(feed *Feed) error {
+	return func(feed *Feed) error {
+		feed.Channel.Owner = &ItunesOwner{
 			Name:  name,
 			Email: email,
 		}
@@ -87,8 +87,8 @@ func Owner(name string, email string) func(f *Feed) error {
 }
 
 // Image sets itunes:image of given feed.
-func Image(href string) func(f *Feed) error {
-	return func(f *Feed) error {
+func Image(href string) func(feed *Feed) error {
+	return func(feed *Feed) error {
 		u, err := url.Parse(href)
 		if err != nil {
 			return err
@@ -96,7 +96,7 @@ func Image(href string) func(f *Feed) error {
 		if !u.IsAbs() {
 			return ErrInvalidImage
 		}
-		f.Channel.Image = &ItunesImage{
+		feed.Channel.Image = &ItunesImage{
 			Href: href,
 		}
 		return nil

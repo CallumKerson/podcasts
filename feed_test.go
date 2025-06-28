@@ -50,15 +50,15 @@ func TestDurationMarshalling(t *testing.T) {
 		},
 	}
 
-	for _, cs := range cases {
-		t.Run(cs.want, func(t *testing.T) {
-			dur := NewDuration(cs.dur)
+	for _, testCase := range cases {
+		t.Run(testCase.want, func(t *testing.T) {
+			dur := NewDuration(testCase.dur)
 			out, err := xml.Marshal(dur)
 			if err != nil {
 				t.Errorf("unexpected error %v", err)
 			}
-			if got := string(out); cs.want != got {
-				t.Errorf("expected %v got %v", cs.want, got)
+			if got := string(out); testCase.want != got {
+				t.Errorf("expected %v got %v", testCase.want, got)
 			}
 		})
 	}

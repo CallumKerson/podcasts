@@ -27,14 +27,14 @@ type PubDate struct {
 }
 
 // MarshalXML marshalls pubdate using the rfc2822 time format.
-func (p PubDate) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
-	if err := e.EncodeToken(start); err != nil {
+func (p PubDate) MarshalXML(encoder *xml.Encoder, start xml.StartElement) error {
+	if err := encoder.EncodeToken(start); err != nil {
 		return err
 	}
-	if err := e.EncodeToken(xml.CharData(p.Format(rfc2822))); err != nil {
+	if err := encoder.EncodeToken(xml.CharData(p.Format(rfc2822))); err != nil {
 		return err
 	}
-	return e.EncodeToken(xml.EndElement{Name: start.Name})
+	return encoder.EncodeToken(xml.EndElement{Name: start.Name})
 }
 
 // NewDuration returns a new Duration.
@@ -48,14 +48,14 @@ type Duration struct {
 }
 
 // MarshalXML marshalls duration using HH:MM:SS, H:MM:SS, MM:SS, M:SS formats.
-func (d Duration) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
-	if err := e.EncodeToken(start); err != nil {
+func (d Duration) MarshalXML(encoder *xml.Encoder, start xml.StartElement) error {
+	if err := encoder.EncodeToken(start); err != nil {
 		return err
 	}
-	if err := e.EncodeToken(xml.CharData(formatDuration(d.Duration))); err != nil {
+	if err := encoder.EncodeToken(xml.CharData(formatDuration(d.Duration))); err != nil {
 		return err
 	}
-	return e.EncodeToken(xml.EndElement{Name: start.Name})
+	return encoder.EncodeToken(xml.EndElement{Name: start.Name})
 }
 
 // formatDuration formats duration in these formats: HH:MM:SS, H:MM:SS, MM:SS, M:SS.
@@ -66,19 +66,19 @@ func formatDuration(d time.Duration) string {
 	minutes := total / 60
 	total %= 60
 
-	var b strings.Builder
+	var builder strings.Builder
 	if hours > 0 {
-		b.WriteString(strconv.Itoa(hours) + ":")
+		builder.WriteString(strconv.Itoa(hours) + ":")
 	}
 	if hours > 0 && minutes < 10 {
-		b.WriteString("0")
+		builder.WriteString("0")
 	}
-	b.WriteString(strconv.Itoa(minutes) + ":")
+	builder.WriteString(strconv.Itoa(minutes) + ":")
 	if total < 10 {
-		b.WriteString("0")
+		builder.WriteString("0")
 	}
-	b.WriteString(strconv.Itoa(total))
-	return b.String()
+	builder.WriteString(strconv.Itoa(total))
+	return builder.String()
 }
 
 // ItunesOwner represents the itunes:owner of given channel.

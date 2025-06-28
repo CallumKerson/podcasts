@@ -1,7 +1,7 @@
 /*
 Package podcasts implements a podcast generator.
 
-	// initialize the podcast
+	// initialise the podcast
 	p := &podcasts.Podcast{
 	    Title:       "My podcast",
 	    Description: "This is my very simple podcast.",
@@ -36,7 +36,7 @@ Package podcasts implements a podcast generator.
 	    },
 	})
 
-	// get podcast feed, you can pass options to customize it
+	// get podcast feed, you can pass options to customise it
 	feed, err := p.Feed(
 	    podcasts.Author("Author Name"),
 	    podcasts.Block,

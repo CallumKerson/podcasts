@@ -17,7 +17,7 @@ func (p *Podcast) AddItem(item *Item) {
 
 // Feed creates a new feed for current podcast.
 func (p *Podcast) Feed(options ...func(f *Feed) error) (*Feed, error) {
-	f := &Feed{
+	feed := &Feed{
 		ItunesXMLNS:  itunesXMLNS,
 		ContentXMLNS: contentXMLNS,
 		Version:      rssVersion,
@@ -30,5 +30,6 @@ func (p *Podcast) Feed(options ...func(f *Feed) error) (*Feed, error) {
 			Items:       p.items,
 		},
 	}
-	return f, f.SetOptions(options...)
+	err := feed.SetOptions(options...)
+	return feed, err
 }
