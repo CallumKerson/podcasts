@@ -8,20 +8,22 @@ import (
 	"time"
 )
 
+type testItem struct {
+	title             string
+	guid              string
+	pubDate           time.Time
+	pubDateStr        string
+	enclosureURL      string
+	enclosureLength   string
+	enclosureType     string
+	duration          time.Duration
+	durationStr       string
+	descriptionStr    string
+	encodedContentStr string
+}
+
 var (
-	validItems = []struct {
-		title             string
-		guid              string
-		pubDate           time.Time
-		pubDateStr        string
-		enclosureURL      string
-		enclosureLength   string
-		enclosureType     string
-		duration          time.Duration
-		durationStr       string
-		descriptionStr    string
-		encodedContentStr string
-	}{
+	validItems = []testItem{
 		{
 			title:           "Item 1",
 			guid:            "http://www.example-podcast.com/my-podcast/1/episode",
@@ -294,7 +296,8 @@ func TestContainsItemElements(t *testing.T) {
 		t.Errorf("unexpected error %v", err)
 	}
 
-	for _, item := range validItems {
+	for i := range validItems {
+		item := &validItems[i]
 		t.Run(item.title, func(t *testing.T) {
 			validatePodcastItem(t, data, item)
 		})
@@ -324,7 +327,8 @@ func getPodcastXML(p *Podcast, options ...func(f *Feed) error) (string, error) {
 
 func setupPodcast() *Podcast {
 	podcast := &Podcast{}
-	for _, item := range validItems {
+	for i := range validItems {
+		item := &validItems[i]
 
 		var description *CDATAText
 		if item.descriptionStr != "" {
@@ -354,19 +358,7 @@ func setupPodcast() *Podcast {
 	return podcast
 }
 
-func validatePodcastItem(t *testing.T, data string, item struct {
-	title             string
-	guid              string
-	pubDate           time.Time
-	pubDateStr        string
-	enclosureURL      string
-	enclosureLength   string
-	enclosureType     string
-	duration          time.Duration
-	durationStr       string
-	descriptionStr    string
-	encodedContentStr string
-}) {
+func validatePodcastItem(t *testing.T, data string, item *testItem) {
 	if want := "<item>"; !strings.Contains(data, want) {
 		t.Errorf("expected %v to contain %v", data, want)
 	}
