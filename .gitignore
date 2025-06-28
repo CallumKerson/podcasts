@@ -30,3 +30,5 @@ _testmain.go
 
 # goland
 .idea/
+
+.out/
