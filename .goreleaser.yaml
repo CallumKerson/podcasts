@@ -1,0 +1,16 @@
+version: 2
+
+project_name: loggerrific
+
+# Pre-release hooks
+before:
+  hooks:
+    - go mod tidy
+
+# Skip building binaries since this is a library
+builds:
+  - skip: true
+
+# Generate changelog from git commits
+changelog:
+  use: github-native
