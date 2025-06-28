@@ -1,0 +1,111 @@
+version: "3"
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  test:
+    desc: Run all tests
+    cmds:
+      - go test ./...
+
+  test:verbose:
+    desc: Run tests with verbose output
+    cmds:
+      - go test -v ./...
+
+  test:race:
+    desc: Run tests with race detection
+    cmds:
+      - go test -race ./...
+
+  test:cover:
+    desc: Run tests with coverage and generate HTML report
+    cmds:
+      - mkdir -p ./.out/
+      - go test -coverprofile=./.out/coverage.out ./...
+      - go tool cover -html=./.out/coverage.out -o ./.out/coverage.html
+      - "echo Coverage report generated: ./.out/coverage.html"
+
+  bench:
+    desc: Run benchmarks
+    cmds:
+      - go test -bench=. ./...
+
+  lint:
+    desc: Run golangci-lint
+    cmds:
+      - golangci-lint run
+
+  fmt:
+    desc: Formats Go code
+    cmds:
+      - go fmt ./...
+
+  fmt:check:
+    desc: Checks format of Go code
+    cmds:
+      - gofmt -l .
+
+  vet:
+    desc: Run go vet
+    cmds:
+      - go vet ./...
+
+  mod:tidy:
+    desc: Tidy go.mod
+    cmds:
+      - go mod tidy
+
+  mod:verify:
+    desc: Verify go.mod
+    cmds:
+      - go mod verify
+
+  install:ctrf:
+    desc: Install go-ctrf-json-reporter if not available
+    status:
+      - command -v go-ctrf-json-reporter
+    cmds:
+      - go install github.com/ctrf-io/go-ctrf-json-reporter/cmd/go-ctrf-json-reporter@latest
+
+  check:
+    desc: Run all checks (fmt, vet, lint, test)
+    deps:
+      - fmt:check
+      - vet
+      - lint
+      - test
+
+  precommit:
+    desc: Run all formatters and checks
+    cmds:
+      - task: fmt
+      - task: mod:tidy
+      - task: check
+
+  ci:test:
+    desc: Runs the tests and produces the correct reports for CI
+    deps:
+      - install:ctrf
+    cmds:
+      - mkdir -p ./.out/
+      - go test -cover -coverprofile=./.out/coverage.txt ./...
+      - go test -json ./... | go-ctrf-json-reporter -output ./.out/ctrf-report.json
+
+  ci:
+    desc: Run continuous integration checks
+    deps:
+      - mod:verify
+      - fmt:check
+      - vet
+      - test
+      - ci:test
+
+  clean:
+    desc: Clean build artifacts and temporary files
+    cmds:
+      - go clean
+      - rm -f ./.out/coverage.out ./.out/coverage.html ./.out/coverage.txt ./.out/ctrf-report.json
