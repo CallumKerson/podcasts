@@ -1,7 +1,13 @@
 package podcasts
 
 import (
+	"errors"
 	"testing"
+)
+
+const (
+	testAuthor   = "Test Author"
+	testSubtitle = "Test Subtitle"
 )
 
 func TestAuthor(t *testing.T) {
@@ -70,9 +76,23 @@ func TestNewFeedURLInvalid(t *testing.T) {
 	feed := &Feed{
 		Channel: &Channel{},
 	}
+
+	// Test invalid URL
 	newURL := "invalid url"
 	if err := NewFeedURL(newURL)(feed); err == nil {
-		t.Error("expected error")
+		t.Error("expected error for invalid URL")
+	}
+
+	// Test relative URL (should be rejected)
+	relativeURL := "/relative/path"
+	if err := NewFeedURL(relativeURL)(feed); !errors.Is(err, ErrInvalidURL) {
+		t.Errorf("expected ErrInvalidURL, got %v", err)
+	}
+
+	// Test URL with characters that make it unparseable
+	invalidCharURL := "http://example.com/path\x00\x01"
+	if err := NewFeedURL(invalidCharURL)(feed); err == nil {
+		t.Error("expected error for URL with null characters")
 	}
 }
 
@@ -136,8 +156,54 @@ func TestImageInvalid(t *testing.T) {
 	feed := &Feed{
 		Channel: &Channel{},
 	}
+
+	// Test invalid URL
 	href := "invalid img url"
 	if err := Image(href)(feed); err == nil {
-		t.Errorf("expected error")
+		t.Error("expected error for invalid image URL")
+	}
+
+	// Test relative URL (should be rejected)
+	relativeHref := "/relative/image.jpg"
+	if err := Image(relativeHref)(feed); !errors.Is(err, ErrInvalidImage) {
+		t.Errorf("expected ErrInvalidImage, got %v", err)
+	}
+
+	// Test URL with characters that make it unparseable
+	invalidCharHref := "http://example.com/image\x00\x01.jpg"
+	if err := Image(invalidCharHref)(feed); err == nil {
+		t.Error("expected error for image URL with null characters")
+	}
+}
+
+// TestSetOptionsWithMultipleOptions tests applying multiple options
+func TestSetOptionsWithMultipleOptions(t *testing.T) {
+	feed := &Feed{
+		Channel: &Channel{},
+	}
+
+	// Apply multiple options
+	err := feed.SetOptions(
+		Author(testAuthor),
+		Block,
+		Explicit,
+		Subtitle(testSubtitle),
+	)
+
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	if feed.Channel.Author != testAuthor {
+		t.Errorf("expected author to be set")
+	}
+	if feed.Channel.Block != ValueYes {
+		t.Errorf("expected block to be set")
+	}
+	if feed.Channel.Explicit != ValueYes {
+		t.Errorf("expected explicit to be set")
+	}
+	if feed.Channel.Subtitle != testSubtitle {
+		t.Errorf("expected subtitle to be set")
 	}
 }
