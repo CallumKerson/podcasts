@@ -35,14 +35,16 @@ tasks:
       - go test -bench=. ./...
 
   lint:
-    desc: Run golangci-lint
+    desc: Run golangci-lint and markdownlint
     cmds:
       - golangci-lint run
+      - npx --yes markdownlint-cli2 "**/*.md"
 
   fmt:
-    desc: Formats Go code
+    desc: Formats all files
     cmds:
       - go fmt ./...
+      - npx --yes prettier . --write
 
   fmt:check:
     desc: Checks format of Go code
