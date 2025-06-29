@@ -33,3 +33,30 @@ func (p *Podcast) Feed(options ...func(f *Feed) error) (*Feed, error) {
 	err := feed.SetOptions(options...)
 	return feed, err
 }
+
+// AddItemWithCapacity adds an item with pre-allocated capacity hint
+func (p *Podcast) AddItemWithCapacity(item *Item, expectedTotal int) {
+	if cap(p.items) < expectedTotal {
+		newItems := make([]*Item, len(p.items), expectedTotal)
+		copy(newItems, p.items)
+		p.items = newItems
+	}
+	p.items = append(p.items, item)
+}
+
+// GetItemCount returns the number of items in the podcast
+func (p *Podcast) GetItemCount() int {
+	return len(p.items)
+}
+
+// GetItems returns a copy of the items slice (safe for concurrent access)
+func (p *Podcast) GetItems() []*Item {
+	items := make([]*Item, len(p.items))
+	copy(items, p.items)
+	return items
+}
+
+// GetItemsSlice returns the items slice directly (unsafe for concurrent modification)
+func (p *Podcast) GetItemsSlice() []*Item {
+	return p.items
+}
