@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#MISE description="Runs all tests with coverage, writing reports to ./.out and failing below the threshold"
+#MISE depends=["golang:mod-tidy"]
+#MISE sources=["go.mod", "go.sum", "**/*.go"]
+#MISE outputs=["./.out/coverage.out", "./.out/coverage.html"]
+
+set -ex
+
+THRESHOLD=${COVERAGE_THRESHOLD:-80}
+
+mkdir -p ./.out/
+go test -coverprofile=./.out/coverage.out ./...
+go tool cover -html=./.out/coverage.out -o ./.out/coverage.html
+
+TOTAL=$(go tool cover -func=./.out/coverage.out | awk '/^total:/ {print $3}' | tr -d '%')
+
+echo "Coverage report generated: ./.out/coverage.html"
+echo "Total coverage: ${TOTAL}%"
+
+if awk "BEGIN {exit !($TOTAL < $THRESHOLD)}"; then
+    echo "ERROR: total coverage ${TOTAL}% is below the ${THRESHOLD}% threshold"
+    exit 1
+fi

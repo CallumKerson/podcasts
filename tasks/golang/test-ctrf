@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+#MISE description="Runs all tests, producing the coverage and CTRF reports used by CI"
+#MISE sources=["go.mod", "go.sum", "**/*.go"]
+#MISE outputs=["./.out/coverage.txt", "./.out/ctrf-report.json"]
+
+set -ex
+
+mkdir -p ./.out/
+go test -cover -coverprofile=./.out/coverage.txt ./...
+go test -json ./... | go-ctrf-json-reporter -output ./.out/ctrf-report.json

@@ -189,7 +189,6 @@ func TestSetOptionsWithMultipleOptions(t *testing.T) {
 		Explicit,
 		Subtitle(testSubtitle),
 	)
-
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}

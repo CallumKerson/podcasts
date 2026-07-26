@@ -5,7 +5,8 @@ including feed metadata options and performance optimizations.
 
 ## Feed Configuration Options
 
-Feed options are functions that modify the RSS feed during creation. They are passed to the `podcast.Feed()` method:
+Feed options are functions that modify the RSS feed during creation.
+They are passed to the `podcast.Feed()` method:
 
 ```go
 feed, err := podcast.Feed(

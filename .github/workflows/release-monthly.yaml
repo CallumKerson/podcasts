@@ -1,0 +1,22 @@
+name: Monthly Release
+
+on:
+  schedule:
+    # 09:00 on the first day of every month
+    - cron: "0 9 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  merge-release-pr:
+    name: merge release PR
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - name: Merge the pending release PR
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: ./.github/scripts/merge-release-pr.sh

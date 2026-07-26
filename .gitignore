@@ -34,3 +34,7 @@ _testmain.go
 .out/
 coverage.out
 coverage.html
+
+# tooling caches
+.rumdl_cache/
+dist/
