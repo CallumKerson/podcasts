@@ -283,6 +283,34 @@ func TestContainsImageElement(t *testing.T) {
 	}
 }
 
+func TestContainsCategoryElement(t *testing.T) {
+	podcast := &Podcast{}
+	data, err := getPodcastXML(podcast, Category("Technology"))
+	if err != nil {
+		t.Errorf("unexpected error %v", err)
+	}
+	want := `<itunes:category text="Technology"></itunes:category>`
+	if !strings.Contains(data, want) {
+		t.Errorf("expected %v to contain %v", data, want)
+	}
+}
+
+func TestContainsNestedCategoryElement(t *testing.T) {
+	podcast := &Podcast{}
+	data, err := getPodcastXML(podcast, Category("Society & Culture", "Documentary"))
+	if err != nil {
+		t.Errorf("unexpected error %v", err)
+	}
+	want := strings.Join([]string{
+		`<itunes:category text="Society &amp; Culture">`,
+		`      <itunes:category text="Documentary"></itunes:category>`,
+		`    </itunes:category>`,
+	}, "\n")
+	if !strings.Contains(data, want) {
+		t.Errorf("expected %v to contain %v", data, want)
+	}
+}
+
 func TestContainsItemElements(t *testing.T) {
 	podcast := setupPodcast()
 	feed, err := podcast.Feed()
