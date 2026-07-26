@@ -30,7 +30,7 @@ func TestFuzzURLValidation(t *testing.T) {
 	}
 
 	for _, testURL := range testCases {
-		t.Run("URL_"+testURL[:minInt(len(testURL), 20)], func(t *testing.T) {
+		t.Run("URL_"+testURL[:min(len(testURL), 20)], func(t *testing.T) {
 			// These should all either return an error or be handled gracefully
 			err1 := NewFeedURL(testURL)(feed)
 			err2 := Image(testURL)(feed)
@@ -66,7 +66,7 @@ func TestFuzzStringFields(t *testing.T) {
 	}
 
 	for _, testStr := range testStrings {
-		t.Run("String_"+testStr[:minInt(len(testStr), 20)], func(t *testing.T) {
+		t.Run("String_"+testStr[:min(len(testStr), 20)], func(t *testing.T) {
 			// Test all string-accepting functions
 			_ = Author(testStr)(feed)
 			_ = Subtitle(testStr)(feed)
@@ -175,13 +175,6 @@ func TestFuzzPodcastCreation(t *testing.T) {
 }
 
 // Helper functions for fuzzing tests
-func minInt(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 func isValidAbsoluteURL(urlStr string) bool {
 	if urlStr == "" {
 		return false
