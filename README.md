@@ -9,7 +9,7 @@ Podcast generator written in Go.
 ## Install
 
 ```bash
-go get github.com/CallumKerson/podcasts
+go get github.com/CallumKerson/podcasts/v2
 ```
 
 ## Go Docs
@@ -26,7 +26,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/CallumKerson/podcasts"
+	"github.com/CallumKerson/podcasts/v2"
 )
 
 func main() {
@@ -132,6 +132,46 @@ Which gives us this XML output:
 ## Options
 
 For further options and configuration, please see the [options docs](./docs/options.md).
+
+## Upgrading from v1
+
+v2 requires Go 1.25 or newer, and the import path gains a `/v2` suffix:
+
+```go
+import "github.com/CallumKerson/podcasts/v2"
+```
+
+The performance API was removed after benchmarking showed it made feed
+generation no faster. `Feed.Write` and `Feed.XML` are unchanged; wrap the writer
+where buffering matters:
+
+```go
+// before
+err := feed.WriteWithOptions(w, WriteOptions{UsePool: true, BufferSize: 8192})
+
+// after
+bw := bufio.NewWriter(w)
+if err := feed.Write(bw); err != nil {
+    return err
+}
+return bw.Flush()
+```
+
+| Removed                    | Use instead                    |
+| -------------------------- | ------------------------------ |
+| `Feed.StreamWrite`         | `Feed.Write`                   |
+| `Feed.WriteWithOptions`    | `Feed.Write`                   |
+| `Feed.XMLWithOptions`      | `Feed.XML`                     |
+| `WriteOptions`             | —                              |
+| `GetBufferPool`            | —                              |
+| `GetStringBuilderPool`     | —                              |
+| `Podcast.AddItemWithCapacity` | `Podcast.AddItem`           |
+| `Podcast.GetItemCount`     | `Podcast.Len`                  |
+| `Podcast.GetItems`         | `Podcast.Items`                |
+| `Podcast.GetItemsSlice`    | `Podcast.Items`                |
+
+Negative `Duration` values now marshal as `-1:30` rather than the malformed
+`-1:0-30`, and `itunes:category` is written before the items rather than after.
 
 ## Development
 
