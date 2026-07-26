@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/CallumKerson/podcasts/compare/v2.0.0...v2.1.0) (2026-07-26)
+
+
+### Features
+
+* add Category option ([#37](https://github.com/CallumKerson/podcasts/issues/37)) ([e3fa10c](https://github.com/CallumKerson/podcasts/commit/e3fa10c7c00758e1b5eca9cf753ebced0e705035))
+
 ## [2.0.0](https://github.com/CallumKerson/podcasts/compare/v1.1.0...v2.0.0) (2026-07-26)
 
 
