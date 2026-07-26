@@ -6,6 +6,7 @@ import (
 	"io"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -192,4 +193,286 @@ func (f *Feed) Write(w io.Writer) error {
 	enc := xml.NewEncoder(w)
 	enc.Indent("", "  ")
 	return enc.Encode(f)
+}
+
+// Global pools for performance optimization
+var (
+	bufferPool = sync.Pool{
+		New: func() interface{} {
+			return &bytes.Buffer{}
+		},
+	}
+
+	stringBuilderPool = sync.Pool{
+		New: func() interface{} {
+			return &strings.Builder{}
+		},
+	}
+)
+
+// WriteOptions defines options for XML writing
+type WriteOptions struct {
+	// BufferSize sets the initial buffer size for large feeds
+	BufferSize int
+	// UsePool enables buffer pooling for reduced allocations
+	UsePool bool
+}
+
+// WriteWithOptions writes marshalled XML with performance options
+func (f *Feed) WriteWithOptions(writer io.Writer, opts WriteOptions) error {
+	var buf *bytes.Buffer
+
+	// Get buffer if pooling is enabled or buffer size is specified
+	if opts.UsePool {
+		buf = bufferPool.Get().(*bytes.Buffer)
+		buf.Reset()
+		defer bufferPool.Put(buf)
+	} else if opts.BufferSize > 0 {
+		buf = &bytes.Buffer{}
+		buf.Grow(opts.BufferSize)
+	}
+
+	finalWriter := writer
+	if buf != nil {
+		finalWriter = buf
+	}
+
+	// Write XML header
+	if _, err := finalWriter.Write([]byte(xml.Header)); err != nil {
+		return err
+	}
+
+	// Encode XML
+	enc := xml.NewEncoder(finalWriter)
+	enc.Indent("", "  ")
+	if err := enc.Encode(f); err != nil {
+		return err
+	}
+
+	// Copy buffer to final writer if buffering was used
+	if buf != nil {
+		if _, err := buf.WriteTo(writer); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// writeOpeningTags writes the RSS opening tags for streaming
+func (f *Feed) writeOpeningTags(writer io.Writer) error {
+	if _, err := writer.Write([]byte(xml.Header)); err != nil {
+		return err
+	}
+
+	// Write opening tags manually for streaming
+	if _, err := writer.Write([]byte(`<rss xmlns:itunes="`)); err != nil {
+		return err
+	}
+	if _, err := writer.Write([]byte(f.ItunesXMLNS)); err != nil {
+		return err
+	}
+	if _, err := writer.Write([]byte(`" xmlns:content="`)); err != nil {
+		return err
+	}
+	if _, err := writer.Write([]byte(f.ContentXMLNS)); err != nil {
+		return err
+	}
+	if _, err := writer.Write([]byte(`" version="`)); err != nil {
+		return err
+	}
+	if _, err := writer.Write([]byte(f.Version)); err != nil {
+		return err
+	}
+	if _, err := writer.Write([]byte(`">`)); err != nil {
+		return err
+	}
+	if _, err := writer.Write([]byte("\n  <channel>\n")); err != nil {
+		return err
+	}
+	return nil
+}
+
+// writeBasicChannelMetadata writes basic channel elements
+func writeBasicChannelMetadata(enc *xml.Encoder, channel *Channel) error {
+	if err := writeElement(enc, "title", channel.Title); err != nil {
+		return err
+	}
+	if err := writeElement(enc, "link", channel.Link); err != nil {
+		return err
+	}
+	if err := writeElement(enc, "description", channel.Description); err != nil {
+		return err
+	}
+	if err := writeElement(enc, "language", channel.Language); err != nil {
+		return err
+	}
+	if err := writeElement(enc, "copyright", channel.Copyright); err != nil {
+		return err
+	}
+	return nil
+}
+
+// writeItunesChannelMetadata writes iTunes-specific channel elements
+func writeItunesChannelMetadata(enc *xml.Encoder, channel *Channel) error {
+	if channel.Author != "" {
+		if err := writeElement(enc, "itunes:author", channel.Author); err != nil {
+			return err
+		}
+	}
+	if channel.Block != "" {
+		if err := writeElement(enc, "itunes:block", channel.Block); err != nil {
+			return err
+		}
+	}
+	if channel.Explicit != "" {
+		if err := writeElement(enc, "itunes:explicit", channel.Explicit); err != nil {
+			return err
+		}
+	}
+	if channel.Complete != "" {
+		if err := writeElement(enc, "itunes:complete", channel.Complete); err != nil {
+			return err
+		}
+	}
+	if channel.NewFeedURL != "" {
+		if err := writeElement(enc, "itunes:new-feed-url", channel.NewFeedURL); err != nil {
+			return err
+		}
+	}
+	if channel.Subtitle != "" {
+		if err := writeElement(enc, "itunes:subtitle", channel.Subtitle); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// writeComplexChannelElements writes complex iTunes elements
+func writeComplexChannelElements(enc *xml.Encoder, channel *Channel) error {
+	// Write summary
+	if channel.Summary != nil {
+		summaryElement := struct {
+			XMLName xml.Name `xml:"itunes:summary"`
+			Value   string   `xml:",cdata"`
+		}{
+			XMLName: xml.Name{Local: "itunes:summary"},
+			Value:   channel.Summary.Value,
+		}
+		if err := enc.Encode(summaryElement); err != nil {
+			return err
+		}
+	}
+
+	// Write owner
+	if channel.Owner != nil {
+		if err := enc.Encode(channel.Owner); err != nil {
+			return err
+		}
+	}
+
+	// Write image
+	if channel.Image != nil {
+		if err := enc.Encode(channel.Image); err != nil {
+			return err
+		}
+	}
+
+	// Write categories
+	for _, category := range channel.Categories {
+		if err := enc.Encode(category); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// writeClosingTags writes the RSS closing tags
+func writeClosingTags(w io.Writer) error {
+	if _, err := w.Write([]byte("\n  </channel>\n</rss>\n")); err != nil {
+		return err
+	}
+	return nil
+}
+
+// StreamWrite writes XML in streaming fashion for large feeds
+func (f *Feed) StreamWrite(writer io.Writer) error {
+	// Write opening tags
+	if err := f.writeOpeningTags(writer); err != nil {
+		return err
+	}
+
+	// Prepare channel without items for metadata writing
+	tempChannel := *f.Channel
+	tempChannel.Items = nil
+
+	enc := xml.NewEncoder(writer)
+	enc.Indent("    ", "  ")
+
+	// Write all channel metadata using helper functions
+	if err := writeBasicChannelMetadata(enc, &tempChannel); err != nil {
+		return err
+	}
+	if err := writeItunesChannelMetadata(enc, &tempChannel); err != nil {
+		return err
+	}
+	if err := writeComplexChannelElements(enc, &tempChannel); err != nil {
+		return err
+	}
+
+	// Stream items one by one to reduce memory usage
+	for _, item := range f.Channel.Items {
+		if err := enc.Encode(item); err != nil {
+			return err
+		}
+	}
+
+	// Write closing tags
+	return writeClosingTags(writer)
+}
+
+// writeElement is a helper function for streaming XML writing
+func writeElement(enc *xml.Encoder, name, value string) error {
+	if value == "" {
+		return nil
+	}
+	return enc.Encode(struct {
+		XMLName xml.Name
+		Value   string `xml:",chardata"`
+	}{
+		XMLName: xml.Name{Local: name},
+		Value:   value,
+	})
+}
+
+// XMLWithOptions generates XML string with performance options
+func (f *Feed) XMLWithOptions(opts WriteOptions) (string, error) {
+	var buf *bytes.Buffer
+
+	if opts.UsePool {
+		buf = bufferPool.Get().(*bytes.Buffer)
+		buf.Reset()
+		defer bufferPool.Put(buf)
+	} else {
+		buf = &bytes.Buffer{}
+		if opts.BufferSize > 0 {
+			buf.Grow(opts.BufferSize)
+		}
+	}
+
+	if err := f.WriteWithOptions(buf, opts); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
+}
+
+// GetBufferPool returns the global buffer pool for external use
+func GetBufferPool() *sync.Pool {
+	return &bufferPool
+}
+
+// GetStringBuilderPool returns the global string builder pool for external use
+func GetStringBuilderPool() *sync.Pool {
+	return &stringBuilderPool
 }

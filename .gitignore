@@ -32,3 +32,5 @@ _testmain.go
 .idea/
 
 .out/
+coverage.out
+coverage.html

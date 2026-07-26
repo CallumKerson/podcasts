@@ -196,7 +196,7 @@ func TestContainsCompleteElement(t *testing.T) {
 
 func TestContainsAuthorElement(t *testing.T) {
 	podcast := &Podcast{}
-	author := "Test Author"
+	author := testAuthor
 	data, err := getPodcastXML(podcast, Author(author))
 	if err != nil {
 		t.Errorf("unexpected error %v", err)
@@ -222,7 +222,7 @@ func TestContainsNewFeedURLElement(t *testing.T) {
 
 func TestContainsSubtitleElement(t *testing.T) {
 	podcast := &Podcast{}
-	subtitle := "Test Subtitle"
+	subtitle := testSubtitle
 	data, err := getPodcastXML(podcast, Subtitle(subtitle))
 	if err != nil {
 		t.Errorf("unexpected error %v", err)
@@ -391,5 +391,157 @@ func validatePodcastItem(t *testing.T, data string, item *testItem) {
 	}
 	if want := "</item>"; !strings.Contains(data, want) {
 		t.Errorf("expected %v to contain %v", data, want)
+	}
+}
+
+func TestPodcastOptionsWithError(t *testing.T) {
+	podcast := &Podcast{
+		Title:       "Options Error Test",
+		Description: "Testing options with errors",
+		Language:    "en",
+		Link:        "https://example.com",
+		Copyright:   "2024",
+	}
+
+	errorOption := func(f *Feed) error {
+		return ErrInvalidURL
+	}
+
+	_, err := podcast.Feed(errorOption)
+	if err == nil {
+		t.Error("Expected error from failing option")
+	}
+}
+
+func TestPodcastURLValidation(t *testing.T) {
+	invalidURLs := []string{
+		"",
+		"not-a-url",
+		"relative/path",
+		"://invalid",
+	}
+
+	for _, url := range invalidURLs {
+		t.Run("InvalidURL_"+url, func(t *testing.T) {
+			podcast := &Podcast{
+				Title:       "URL Test",
+				Description: "Testing URL validation",
+				Language:    "en",
+				Link:        "https://example.com",
+				Copyright:   "2024",
+			}
+
+			_, err := podcast.Feed(NewFeedURL(url))
+			if err == nil {
+				t.Errorf("Expected error for invalid URL: %s", url)
+			}
+		})
+	}
+}
+
+func TestPodcastImageValidation(t *testing.T) {
+	invalidURLs := []string{
+		"",
+		"not-a-url",
+		"relative/path",
+		"://invalid",
+	}
+
+	for _, url := range invalidURLs {
+		t.Run("InvalidImageURL_"+url, func(t *testing.T) {
+			podcast := &Podcast{
+				Title:       "Image Test",
+				Description: "Testing image validation",
+				Language:    "en",
+				Link:        "https://example.com",
+				Copyright:   "2024",
+			}
+
+			_, err := podcast.Feed(Image(url))
+			if err == nil {
+				t.Errorf("Expected error for invalid image URL: %s", url)
+			}
+		})
+	}
+}
+
+func TestPodcastMethods(t *testing.T) {
+	podcast := &Podcast{
+		Title:       "Methods Test",
+		Description: "Testing podcast methods",
+		Language:    "en",
+		Link:        "https://example.com",
+		Copyright:   "2024",
+	}
+
+	// Test initial state
+	if podcast.GetItemCount() != 0 {
+		t.Error("Initial item count should be 0")
+	}
+
+	// Add items
+	item1 := &Item{
+		Title:   "Item 1",
+		GUID:    "https://example.com/1",
+		PubDate: NewPubDate(time.Now()),
+	}
+	item2 := &Item{
+		Title:   "Item 2",
+		GUID:    "https://example.com/2",
+		PubDate: NewPubDate(time.Now()),
+	}
+
+	podcast.AddItem(item1)
+	podcast.AddItem(item2)
+
+	if podcast.GetItemCount() != 2 {
+		t.Errorf("Expected 2 items, got %d", podcast.GetItemCount())
+	}
+
+	// Test GetItems (safe copy)
+	items := podcast.GetItems()
+	if len(items) != 2 {
+		t.Errorf("Expected 2 items from GetItems, got %d", len(items))
+	}
+
+	// Modify the returned slice - should not affect original
+	items[0] = nil
+
+	// Test GetItemsSlice (direct reference)
+	directItems := podcast.GetItemsSlice()
+	if len(directItems) != 2 {
+		t.Errorf("Expected 2 items from GetItemsSlice, got %d", len(directItems))
+	}
+
+	// Original items should be unchanged
+	if directItems[0] == nil {
+		t.Error("Direct items slice should not be affected by copy modification")
+	}
+	if directItems[0].Title != "Item 1" {
+		t.Error("First item title should be unchanged")
+	}
+
+	// Test AddItemWithCapacity
+	item3 := &Item{
+		Title:   "Item 3",
+		GUID:    "https://example.com/3",
+		PubDate: NewPubDate(time.Now()),
+	}
+	podcast.AddItemWithCapacity(item3, 100)
+
+	if podcast.GetItemCount() != 3 {
+		t.Error("Should have 3 items after AddItemWithCapacity")
+	}
+
+	// Test adding with capacity less than current length
+	item4 := &Item{
+		Title:   "Item 4",
+		GUID:    "https://example.com/4",
+		PubDate: NewPubDate(time.Now()),
+	}
+	podcast.AddItemWithCapacity(item4, 1) // Less than current length
+
+	if podcast.GetItemCount() != 4 {
+		t.Errorf("Expected 4 items, got %d", podcast.GetItemCount())
 	}
 }
