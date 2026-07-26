@@ -576,27 +576,13 @@ func TestPodcastMethods(t *testing.T) {
 		t.Error("First item title should be unchanged")
 	}
 
-	// Test AddItemWithCapacity
-	item3 := &Item{
+	podcast.AddItem(&Item{
 		Title:   "Item 3",
 		GUID:    "https://example.com/3",
 		PubDate: NewPubDate(time.Now()),
-	}
-	podcast.AddItemWithCapacity(item3, 100)
+	})
 
 	if podcast.GetItemCount() != 3 {
-		t.Error("Should have 3 items after AddItemWithCapacity")
-	}
-
-	// Test adding with capacity less than current length
-	item4 := &Item{
-		Title:   "Item 4",
-		GUID:    "https://example.com/4",
-		PubDate: NewPubDate(time.Now()),
-	}
-	podcast.AddItemWithCapacity(item4, 1) // Less than current length
-
-	if podcast.GetItemCount() != 4 {
-		t.Errorf("Expected 4 items, got %d", podcast.GetItemCount())
+		t.Errorf("Expected 3 items, got %d", podcast.GetItemCount())
 	}
 }

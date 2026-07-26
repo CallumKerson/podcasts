@@ -153,154 +153,47 @@ feed, err := podcast.Feed(NewFeedURL("https://newhost.com/my-podcast/feed.xml"))
 - URL must be absolute (validated at runtime)
 - Some clients may not support feed redirection immediately
 
-## Performance Options
+## Writing the Feed
 
-Performance options are configured through the `WriteOptions` struct when generating XML:
+There are two ways to serialise a configured feed.
 
-### `WriteOptions` Structure
+### `feed.XML() (string, error)`
 
-```go
-type WriteOptions struct {
-    BufferSize int  // Initial buffer size in bytes
-    UsePool    bool // Enable buffer pooling
-}
-```
-
-### Standard XML Generation
+Marshals the feed and returns it as a string.
 
 ```go
-// Basic usage - no performance optimizations
 xmlString, err := feed.XML()
-err = feed.Write(writer)
 ```
 
-**When to use:** For small podcasts (< 50 episodes) or when memory usage isn't a concern.
+**When to use:** When you need the feed in memory, for example to hand to a template or store it.
 
-**Downsides:** May allocate more memory for large feeds.
+**Downsides:** Holds the whole feed in memory as a string.
 
-### Buffered Writing
+### `feed.Write(w io.Writer) error`
+
+Marshals the feed straight to any `io.Writer`, such as an `http.ResponseWriter` or a file.
 
 ```go
-opts := WriteOptions{BufferSize: 8192}
-err = feed.WriteWithOptions(writer, opts)
-xmlString, err := feed.XMLWithOptions(opts)
+err := feed.Write(w)
 ```
 
-**When to use:**
+**When to use:** Whenever you are writing the feed somewhere rather than inspecting it.
+This is the cheaper of the two, as no intermediate string is built.
 
-- Large podcasts (100+ episodes)
-- When you know approximate feed size
-- Network writing where buffering improves performance
+**Downsides:** None; prefer this unless you specifically need a string.
 
-**Benefits:**
+### Buffering
 
-- Reduces memory allocations
-- Improves write performance for large feeds
-- Reduces system calls
-
-**Downsides:**
-
-- Uses more memory upfront
-- Buffer size estimation required for optimal performance
-
-### Pooled Buffers
+`Write` issues a number of small writes as it encodes.
+If the destination is expensive to write to, such as a file or a socket, wrap it:
 
 ```go
-opts := WriteOptions{UsePool: true}
-err = feed.WriteWithOptions(writer, opts)
-```
-
-**When to use:**
-
-- High-frequency feed generation (multiple feeds per second)
-- Server applications generating many feeds
-- Memory-constrained environments
-
-**Benefits:**
-
-- Reuses buffer objects across operations
-- Reduces garbage collection pressure
-- Lower memory allocation overhead
-
-**Downsides:**
-
-- Slightly more complex memory management
-- Buffers remain allocated in pool between uses
-
-### Combined Optimization
-
-```go
-opts := WriteOptions{
-    BufferSize: 16384,
-    UsePool:    true,
+bw := bufio.NewWriter(w)
+if err := feed.Write(bw); err != nil {
+    return err
 }
-err = feed.WriteWithOptions(writer, opts)
+return bw.Flush()
 ```
 
-**When to use:** High-performance applications with large feeds and frequent generation.
-
-**Benefits:** Maximum performance optimization combining both techniques.
-
-**Downsides:** Highest memory usage per operation.
-
-### Streaming for Large Feeds
-
-```go
-err = feed.StreamWrite(writer)
-```
-
-**When to use:**
-
-- Very large podcasts (500+ episodes)
-- Memory-constrained environments
-- When feed size approaches available memory
-
-**Benefits:**
-
-- Constant memory usage regardless of feed size
-- Suitable for extremely large feeds
-- Lower peak memory consumption
-
-**Downsides:**
-
-- Slightly slower than buffered approaches
-- Cannot be used to generate XML strings (only direct writing)
-- Less control over output formatting
-
-## Performance Comparison
-
-| Method                          | Memory Usage | Speed   | Best For                         |
-| ------------------------------- | ------------ | ------- | -------------------------------- |
-| `XML()` / `Write()`             | Medium       | Fast    | Small feeds (< 50 episodes)      |
-| `WriteWithOptions` (BufferSize) | High         | Fastest | Large feeds, known size          |
-| `WriteWithOptions` (UsePool)    | Low          | Fast    | High frequency generation        |
-| `WriteWithOptions` (Both)       | Medium-High  | Fastest | High performance + large feeds   |
-| `StreamWrite`                   | Lowest       | Medium  | Very large feeds (500+ episodes) |
-
-## Buffer Pool Access
-
-For advanced use cases, you can access the global buffer pools directly:
-
-```go
-import "sync"
-
-// Get the global buffer pool
-bufferPool := GetBufferPool()
-buf := bufferPool.Get().(*bytes.Buffer)
-defer func() {
-    buf.Reset()
-    bufferPool.Put(buf)
-}()
-
-// Get the global string builder pool
-stringPool := GetStringBuilderPool()
-sb := stringPool.Get().(*strings.Builder)
-defer func() {
-    sb.Reset()
-    stringPool.Put(sb)
-}()
-```
-
-**When to use:** When integrating with existing pooling strategies or building custom optimizations.
-
-**Downsides:** Requires manual memory management and proper cleanup.
+The library deliberately does not provide its own buffering or pooling options.
+Earlier versions did, and they measured no faster than a `bufio.Writer` while adding public API that could not be changed later.

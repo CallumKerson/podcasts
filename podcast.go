@@ -34,16 +34,6 @@ func (p *Podcast) Feed(options ...func(f *Feed) error) (*Feed, error) {
 	return feed, err
 }
 
-// AddItemWithCapacity adds an item with pre-allocated capacity hint
-func (p *Podcast) AddItemWithCapacity(item *Item, expectedTotal int) {
-	if cap(p.items) < expectedTotal {
-		newItems := make([]*Item, len(p.items), expectedTotal)
-		copy(newItems, p.items)
-		p.items = newItems
-	}
-	p.items = append(p.items, item)
-}
-
 // GetItemCount returns the number of items in the podcast
 func (p *Podcast) GetItemCount() int {
 	return len(p.items)
