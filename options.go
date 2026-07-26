@@ -11,6 +11,9 @@ var (
 
 	// ErrInvalidImage represents a error returned for invalid image.
 	ErrInvalidImage = errors.New("podcasts: invalid image")
+
+	// ErrInvalidCategory represents a error returned for invalid category.
+	ErrInvalidCategory = errors.New("podcasts: invalid category")
 )
 
 const (
@@ -82,6 +85,30 @@ func Owner(name, email string) func(feed *Feed) error {
 			Name:  name,
 			Email: email,
 		}
+		return nil
+	}
+}
+
+// Category adds an itunes:category to the given feed, nesting any
+// subcategories inside it. A feed may carry more than one category, so each
+// call appends rather than replacing what is already there.
+//
+// The names are not checked against Apple's category list, which changes
+// without notice; a feed submitted to a directory needs to use the names that
+// directory publishes.
+func Category(name string, subcategories ...string) func(feed *Feed) error {
+	return func(feed *Feed) error {
+		if name == "" {
+			return ErrInvalidCategory
+		}
+		category := &ItunesCategory{Text: name}
+		for _, subcategory := range subcategories {
+			if subcategory == "" {
+				return ErrInvalidCategory
+			}
+			category.Categories = append(category.Categories, &ItunesCategory{Text: subcategory})
+		}
+		feed.Channel.Categories = append(feed.Channel.Categories, category)
 		return nil
 	}
 }

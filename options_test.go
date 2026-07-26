@@ -152,6 +152,81 @@ func TestImage(t *testing.T) {
 	}
 }
 
+func TestCategory(t *testing.T) {
+	feed := &Feed{
+		Channel: &Channel{},
+	}
+	if err := Category("Technology")(feed); err != nil {
+		t.Errorf("unexpected error %v", err)
+	}
+	if len(feed.Channel.Categories) != 1 {
+		t.Fatalf("expected 1 category got %v", len(feed.Channel.Categories))
+	}
+	if want := "Technology"; feed.Channel.Categories[0].Text != want {
+		t.Errorf("expected %v got %v", want, feed.Channel.Categories[0].Text)
+	}
+	if got := feed.Channel.Categories[0].Categories; len(got) != 0 {
+		t.Errorf("expected no subcategories got %v", len(got))
+	}
+}
+
+func TestCategoryWithSubcategories(t *testing.T) {
+	feed := &Feed{
+		Channel: &Channel{},
+	}
+	if err := Category("Society & Culture", "Documentary", "Personal Journals")(feed); err != nil {
+		t.Errorf("unexpected error %v", err)
+	}
+	if len(feed.Channel.Categories) != 1 {
+		t.Fatalf("expected 1 category got %v", len(feed.Channel.Categories))
+	}
+
+	subcategories := feed.Channel.Categories[0].Categories
+	if len(subcategories) != 2 {
+		t.Fatalf("expected 2 subcategories got %v", len(subcategories))
+	}
+	for i, want := range []string{"Documentary", "Personal Journals"} {
+		if subcategories[i].Text != want {
+			t.Errorf("expected %v got %v", want, subcategories[i].Text)
+		}
+	}
+}
+
+func TestCategoryAppends(t *testing.T) {
+	feed := &Feed{
+		Channel: &Channel{},
+	}
+	if err := feed.SetOptions(Category("Technology"), Category("News", "Tech News")); err != nil {
+		t.Errorf("unexpected error %v", err)
+	}
+	if len(feed.Channel.Categories) != 2 {
+		t.Fatalf("expected 2 categories got %v", len(feed.Channel.Categories))
+	}
+	for i, want := range []string{"Technology", "News"} {
+		if feed.Channel.Categories[i].Text != want {
+			t.Errorf("expected %v got %v", want, feed.Channel.Categories[i].Text)
+		}
+	}
+}
+
+func TestCategoryInvalid(t *testing.T) {
+	feed := &Feed{
+		Channel: &Channel{},
+	}
+
+	if err := Category("")(feed); !errors.Is(err, ErrInvalidCategory) {
+		t.Errorf("expected ErrInvalidCategory, got %v", err)
+	}
+
+	if err := Category("Technology", "")(feed); !errors.Is(err, ErrInvalidCategory) {
+		t.Errorf("expected ErrInvalidCategory for empty subcategory, got %v", err)
+	}
+
+	if len(feed.Channel.Categories) != 0 {
+		t.Errorf("expected no categories to be added, got %v", len(feed.Channel.Categories))
+	}
+}
+
 func TestImageInvalid(t *testing.T) {
 	feed := &Feed{
 		Channel: &Channel{},

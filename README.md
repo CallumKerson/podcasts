@@ -76,6 +76,7 @@ func main() {
 		podcasts.Summary("This is my very simple podcast summary."),
 		podcasts.Owner("Podcast Owner", "owner@example-podcast.com"),
 		podcasts.Image("http://www.example-podcast.com/my-podcast.jpg"),
+		podcasts.Category("Technology"),
 	)
 
 	// handle error
@@ -111,6 +112,7 @@ Which gives us this XML output:
       <itunes:email>owner@example-podcast.com</itunes:email>
     </itunes:owner>
     <itunes:image href="http://www.example-podcast.com/my-podcast.jpg"></itunes:image>
+    <itunes:category text="Technology"></itunes:category>
     <item>
       <title>Episode 1</title>
       <guid>http://www.example-podcast.com/my-podcast/1/episode-one</guid>

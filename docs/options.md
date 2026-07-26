@@ -1,7 +1,7 @@
 # Configuration Options
 
 This document describes the various ways to configure the podcasts library,
-including feed metadata options and performance optimizations.
+covering the feed metadata options and how to write the finished feed.
 
 ## Feed Configuration Options
 
@@ -91,6 +91,38 @@ feed, err := podcast.Feed(Image("https://example.com/podcast-art.jpg"))
 - URL must be absolute (validated at runtime)
 - Large images may slow feed parsing
 - Recommended: 1400x1400 to 3000x3000 pixels, JPEG/PNG
+
+#### `Category(name string, subcategories ...string)`
+
+Adds an `itunes:category`, nesting any subcategories inside it.
+
+**When to use:** Always, for a feed you intend to submit to a directory.
+Apple requires at least one category, and uses it to decide where the podcast is listed.
+
+**Example:**
+
+```go
+feed, err := podcast.Feed(
+    Category("Technology"),
+    Category("Society & Culture", "Documentary", "Personal Journals"),
+)
+```
+
+```xml
+<itunes:category text="Technology"></itunes:category>
+<itunes:category text="Society &amp; Culture">
+  <itunes:category text="Documentary"></itunes:category>
+  <itunes:category text="Personal Journals"></itunes:category>
+</itunes:category>
+```
+
+A feed may carry more than one category, so each call appends rather than replacing what is already there.
+
+**Downsides:**
+
+- Names are not checked against Apple's category list, which changes without notice, so a typo is only caught when the feed is submitted.
+  Use the names the target directory publishes.
+- An empty name or subcategory returns `ErrInvalidCategory`.
 
 ### Content Control Options
 
