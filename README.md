@@ -1,7 +1,7 @@
 # podcasts
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/CallumKerson/podcasts?style=flat-square)](https://goreportcard.com/report/github.com/CallumKerson/podcasts)
-[![Go Reference](https://pkg.go.dev/badge/github.com/CallumKerson/podcasts.svg)](https://pkg.go.dev/github.com/CallumKerson/podcasts)
+[![Go Report Card](https://goreportcard.com/badge/github.com/CallumKerson/podcasts/v2?style=flat-square)](https://goreportcard.com/report/github.com/CallumKerson/podcasts/v2)
+[![Go Reference](https://pkg.go.dev/badge/github.com/CallumKerson/podcasts/v2.svg)](https://pkg.go.dev/github.com/CallumKerson/podcasts/v2)
 [![Release](https://img.shields.io/github/release/CallumKerson/podcasts.svg?style=flat-square)](https://github.com/CallumKerson/podcasts/releases/latest)
 
 Podcast generator written in Go.
@@ -14,7 +14,7 @@ go get github.com/CallumKerson/podcasts/v2
 
 ## Go Docs
 
-[https://godoc.org/github.com/CallumKerson/podcasts](https://godoc.org/github.com/CallumKerson/podcasts)
+[https://pkg.go.dev/github.com/CallumKerson/podcasts/v2](https://pkg.go.dev/github.com/CallumKerson/podcasts/v2)
 
 ## Example usage
 
