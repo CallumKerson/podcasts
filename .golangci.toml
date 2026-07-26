@@ -85,7 +85,7 @@ enable = ["gci", "gofumpt", "golines"]
 sections = ["standard", "default", "localmodule"]
 
 [formatters.settings.gofumpt]
-module-path = "github.com/CallumKerson/podcasts"
+module-path = "github.com/CallumKerson/podcasts/v2"
 extra-rules = true
 
 [formatters.settings.golines]
