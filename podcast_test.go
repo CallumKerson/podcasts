@@ -530,7 +530,7 @@ func TestPodcastMethods(t *testing.T) {
 	}
 
 	// Test initial state
-	if podcast.GetItemCount() != 0 {
+	if podcast.Len() != 0 {
 		t.Error("Initial item count should be 0")
 	}
 
@@ -549,30 +549,23 @@ func TestPodcastMethods(t *testing.T) {
 	podcast.AddItem(item1)
 	podcast.AddItem(item2)
 
-	if podcast.GetItemCount() != 2 {
-		t.Errorf("Expected 2 items, got %d", podcast.GetItemCount())
+	if podcast.Len() != 2 {
+		t.Errorf("Expected 2 items, got %d", podcast.Len())
 	}
 
-	// Test GetItems (safe copy)
-	items := podcast.GetItems()
+	items := podcast.Items()
 	if len(items) != 2 {
-		t.Errorf("Expected 2 items from GetItems, got %d", len(items))
+		t.Errorf("Expected 2 items from Items, got %d", len(items))
 	}
 
-	// Modify the returned slice - should not affect original
+	// Modifying the returned slice must not reach the podcast
 	items[0] = nil
 
-	// Test GetItemsSlice (direct reference)
-	directItems := podcast.GetItemsSlice()
-	if len(directItems) != 2 {
-		t.Errorf("Expected 2 items from GetItemsSlice, got %d", len(directItems))
+	again := podcast.Items()
+	if again[0] == nil {
+		t.Error("Items should return a copy, not the underlying slice")
 	}
-
-	// Original items should be unchanged
-	if directItems[0] == nil {
-		t.Error("Direct items slice should not be affected by copy modification")
-	}
-	if directItems[0].Title != "Item 1" {
+	if again[0].Title != "Item 1" {
 		t.Error("First item title should be unchanged")
 	}
 
@@ -582,7 +575,7 @@ func TestPodcastMethods(t *testing.T) {
 		PubDate: NewPubDate(time.Now()),
 	})
 
-	if podcast.GetItemCount() != 3 {
-		t.Errorf("Expected 3 items, got %d", podcast.GetItemCount())
+	if podcast.Len() != 3 {
+		t.Errorf("Expected 3 items, got %d", podcast.Len())
 	}
 }

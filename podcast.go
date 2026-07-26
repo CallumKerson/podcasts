@@ -34,19 +34,16 @@ func (p *Podcast) Feed(options ...func(f *Feed) error) (*Feed, error) {
 	return feed, err
 }
 
-// GetItemCount returns the number of items in the podcast
-func (p *Podcast) GetItemCount() int {
+// Len returns the number of items in the podcast.
+func (p *Podcast) Len() int {
 	return len(p.items)
 }
 
-// GetItems returns a copy of the items slice (safe for concurrent access)
-func (p *Podcast) GetItems() []*Item {
+// Items returns a copy of the podcast items, so that callers cannot reach the
+// slice the podcast builds its feed from. A Podcast is not safe for concurrent
+// use: guard it yourself if one goroutine may call AddItem while another reads.
+func (p *Podcast) Items() []*Item {
 	items := make([]*Item, len(p.items))
 	copy(items, p.items)
 	return items
-}
-
-// GetItemsSlice returns the items slice directly (unsafe for concurrent modification)
-func (p *Podcast) GetItemsSlice() []*Item {
-	return p.items
 }
