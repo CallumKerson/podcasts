@@ -60,21 +60,32 @@ func (d Duration) MarshalXML(encoder *xml.Encoder, start xml.StartElement) error
 }
 
 // formatDuration formats duration in these formats: HH:MM:SS, H:MM:SS, MM:SS, M:SS.
+// A negative duration is formatted as its magnitude behind a minus sign, the same
+// way time.Duration.String does, so that a caller mistake is visible in the feed
+// instead of being silently turned into a plausible looking value.
 func formatDuration(d time.Duration) string {
+	var builder strings.Builder
+
 	total := int(d.Seconds())
+	if total < 0 {
+		builder.WriteString("-")
+		total = -total
+	}
+
 	hours := total / 3600
 	total %= 3600
 	minutes := total / 60
 	total %= 60
 
-	var builder strings.Builder
 	if hours > 0 {
-		builder.WriteString(strconv.Itoa(hours) + ":")
+		builder.WriteString(strconv.Itoa(hours))
+		builder.WriteString(":")
 	}
 	if hours > 0 && minutes < 10 {
 		builder.WriteString("0")
 	}
-	builder.WriteString(strconv.Itoa(minutes) + ":")
+	builder.WriteString(strconv.Itoa(minutes))
+	builder.WriteString(":")
 	if total < 10 {
 		builder.WriteString("0")
 	}
@@ -153,8 +164,10 @@ type Channel struct {
 	Summary     *CDATAText `xml:"itunes:summary,omitempty"`
 	Owner       *ItunesOwner
 	Image       *ItunesImage
-	Items       []*Item
 	Categories  []*ItunesCategory
+	// Items is last so that every channel level element is marshalled before
+	// the episodes, as encoding/xml writes fields in declaration order.
+	Items []*Item
 }
 
 // Feed wraps the given RSS channel.
@@ -210,6 +223,15 @@ var (
 	}
 )
 
+// putBuffer returns a buffer to the pool, emptying it first so that the pool
+// only ever holds buffers that are safe to hand straight back out. Callers that
+// read the buffer rather than draining it, and error paths that abandon it part
+// written, would otherwise leave their contents behind.
+func putBuffer(buf *bytes.Buffer) {
+	buf.Reset()
+	bufferPool.Put(buf)
+}
+
 // WriteOptions defines options for XML writing
 type WriteOptions struct {
 	// BufferSize sets the initial buffer size for large feeds
@@ -226,7 +248,7 @@ func (f *Feed) WriteWithOptions(writer io.Writer, opts WriteOptions) error {
 	if opts.UsePool {
 		buf = bufferPool.Get().(*bytes.Buffer)
 		buf.Reset()
-		defer bufferPool.Put(buf)
+		defer putBuffer(buf)
 	} else if opts.BufferSize > 0 {
 		buf = &bytes.Buffer{}
 		buf.Grow(opts.BufferSize)
@@ -453,7 +475,7 @@ func (f *Feed) XMLWithOptions(opts WriteOptions) (string, error) {
 	if opts.UsePool {
 		buf = bufferPool.Get().(*bytes.Buffer)
 		buf.Reset()
-		defer bufferPool.Put(buf)
+		defer putBuffer(buf)
 	} else {
 		buf = &bytes.Buffer{}
 		if opts.BufferSize > 0 {
