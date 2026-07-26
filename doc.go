@@ -5,7 +5,7 @@ Package podcasts implements a podcast generator.
 	p := &podcasts.Podcast{
 	    Title:       "My podcast",
 	    Description: "This is my very simple podcast.",
-	    Language:    "EN",
+	    Language:    "en",
 	    Link:        "http://www.example-podcast.com/my-podcast",
 	    Copyright:   "2015 My podcast copyright",
 	}
@@ -19,7 +19,7 @@ Package podcasts implements a podcast generator.
 	    Enclosure: &podcasts.Enclosure{
 	        URL:    "http://www.example-podcast.com/my-podcast/1/episode.mp3",
 	        Length: "12312",
-	        Type:   "MP3",
+	        Type:   "audio/mpeg",
 	    },
 	})
 
@@ -32,7 +32,7 @@ Package podcasts implements a podcast generator.
 	    Enclosure: &podcasts.Enclosure{
 	        URL:    "http://www.example-podcast.com/my-podcast/2/episode.mp3",
 	        Length: "46732",
-	        Type:   "MP3",
+	        Type:   "audio/mpeg",
 	    },
 	})
 

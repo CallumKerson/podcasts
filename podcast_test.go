@@ -302,6 +302,37 @@ func TestContainsItemElements(t *testing.T) {
 	}
 }
 
+func TestChannelMetadataPrecedesItems(t *testing.T) {
+	podcast := setupPodcast()
+	feed, err := podcast.Feed(Image("http://www.example-podcast.com/my-podcast.jpg"))
+	if err != nil {
+		t.Errorf("unexpected error %v", err)
+	}
+	feed.Channel.Categories = []*ItunesCategory{{Text: "Technology"}}
+
+	data, err := feed.XML()
+	if err != nil {
+		t.Errorf("unexpected error %v", err)
+	}
+
+	firstItem := strings.Index(data, "<item>")
+	if firstItem < 0 {
+		t.Fatal("expected the feed to contain items")
+	}
+
+	for _, element := range []string{"<itunes:image", "<itunes:category"} {
+		t.Run(element, func(t *testing.T) {
+			at := strings.Index(data, element)
+			if at < 0 {
+				t.Fatalf("expected the feed to contain %s", element)
+			}
+			if at > firstItem {
+				t.Errorf("expected %s to be written before the first item", element)
+			}
+		})
+	}
+}
+
 func TestPodcastFeedWrite(t *testing.T) {
 	podcast := &Podcast{}
 	feed, err := podcast.Feed()

@@ -34,7 +34,7 @@ func main() {
 	p := &podcasts.Podcast{
 		Title:       "My podcast",
 		Description: "This is my very simple podcast.",
-		Language:    "EN",
+		Language:    "en",
 		Link:        "http://www.example-podcast.com/my-podcast",
 		Copyright:   "2015 My podcast copyright",
 	}
@@ -48,7 +48,7 @@ func main() {
 		Enclosure: &podcasts.Enclosure{
 			URL:    "http://www.example-podcast.com/my-podcast/1/episode.mp3",
 			Length: "12312",
-			Type:   "MP3",
+			Type:   "audio/mpeg",
 		},
 	})
 
@@ -61,7 +61,7 @@ func main() {
 		Enclosure: &podcasts.Enclosure{
 			URL:    "http://www.example-podcast.com/my-podcast/2/episode.mp3",
 			Length: "46732",
-			Type:   "MP3",
+			Type:   "audio/mpeg",
 		},
 	})
 
@@ -92,12 +92,12 @@ Which gives us this XML output:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<rss xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" version="2.0">
+<rss xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0">
   <channel>
     <title>My podcast</title>
     <link>http://www.example-podcast.com/my-podcast</link>
     <copyright>2015 My podcast copyright</copyright>
-    <language>EN</language>
+    <language>en</language>
     <description>This is my very simple podcast.</description>
     <itunes:author>Author Name</itunes:author>
     <itunes:block>yes</itunes:block>
@@ -116,14 +116,14 @@ Which gives us this XML output:
       <guid>http://www.example-podcast.com/my-podcast/1/episode-one</guid>
       <pubDate>Tue, 10 Nov 2009 23:00:00 +0000</pubDate>
       <itunes:duration>3:50</itunes:duration>
-      <enclosure url="http://www.example-podcast.com/my-podcast/1/episode.mp3" length="12312" type="MP3"></enclosure>
+      <enclosure url="http://www.example-podcast.com/my-podcast/1/episode.mp3" length="12312" type="audio/mpeg"></enclosure>
     </item>
     <item>
       <title>Episode 2</title>
       <guid>http://www.example-podcast.com/my-podcast/2/episode-two</guid>
       <pubDate>Tue, 10 Nov 2009 23:00:00 +0000</pubDate>
       <itunes:duration>5:20</itunes:duration>
-      <enclosure url="http://www.example-podcast.com/my-podcast/2/episode.mp3" length="46732" type="MP3"></enclosure>
+      <enclosure url="http://www.example-podcast.com/my-podcast/2/episode.mp3" length="46732" type="audio/mpeg"></enclosure>
     </item>
   </channel>
 </rss>

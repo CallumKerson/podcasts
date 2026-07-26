@@ -147,6 +147,18 @@ func TestDurationMarshalling(t *testing.T) {
 			dur:  time.Second * 37000,
 			want: "<Duration>10:16:40</Duration>",
 		},
+		{
+			dur:  time.Second * -6,
+			want: "<Duration>-0:06</Duration>",
+		},
+		{
+			dur:  time.Second * -90,
+			want: "<Duration>-1:30</Duration>",
+		},
+		{
+			dur:  time.Second * -3665,
+			want: "<Duration>-1:01:05</Duration>",
+		},
 	}
 
 	for _, testCase := range cases {
