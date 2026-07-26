@@ -22,41 +22,39 @@ type testItem struct {
 	encodedContentStr string
 }
 
-var (
-	validItems = []testItem{
-		{
-			title:           "Item 1",
-			guid:            "http://www.example-podcast.com/my-podcast/1/episode",
-			pubDate:         time.Date(2015, time.January, 1, 0, 0, 0, 0, time.UTC),
-			pubDateStr:      "Thu, 01 Jan 2015 00:00:00 +0000",
-			enclosureURL:    "http://www.example-podcast.com/my-podcast/1/episode-one",
-			enclosureLength: "1234",
-			enclosureType:   "MP3",
-		},
-		{
-			title:           "Item 2",
-			guid:            "http://www.example-podcast.com/my-podcast/2/episode",
-			pubDate:         time.Date(2015, time.January, 2, 0, 0, 0, 0, time.UTC),
-			pubDateStr:      "Fri, 02 Jan 2015 00:00:00 +0000",
-			enclosureURL:    "http://www.example-podcast.com/my-podcast/2/episode-two",
-			enclosureLength: "56445",
-			enclosureType:   "WAV",
-			duration:        time.Second * 94,
-			durationStr:     "1:34",
-		},
-		{
-			title:             "Item 3",
-			guid:              "http://www.example-podcast.com/my-podcast/3/episode",
-			pubDate:           time.Date(2015, time.January, 3, 0, 0, 0, 0, time.UTC),
-			pubDateStr:        "Thu, 01 Jan 2015 00:00:00 +0000",
-			enclosureURL:      "http://www.example-podcast.com/my-podcast/3/episode-three",
-			enclosureLength:   "1234",
-			enclosureType:     "MP3",
-			descriptionStr:    "A short description of the podcast episode",
-			encodedContentStr: "<h1>Item 3</h1><p>A <em>longer</em> description of the podcast, specifically designed for embedded HTML.</p>",
-		},
-	}
-)
+var validItems = []testItem{
+	{
+		title:           "Item 1",
+		guid:            "http://www.example-podcast.com/my-podcast/1/episode",
+		pubDate:         time.Date(2015, time.January, 1, 0, 0, 0, 0, time.UTC),
+		pubDateStr:      "Thu, 01 Jan 2015 00:00:00 +0000",
+		enclosureURL:    "http://www.example-podcast.com/my-podcast/1/episode-one",
+		enclosureLength: "1234",
+		enclosureType:   "MP3",
+	},
+	{
+		title:           "Item 2",
+		guid:            "http://www.example-podcast.com/my-podcast/2/episode",
+		pubDate:         time.Date(2015, time.January, 2, 0, 0, 0, 0, time.UTC),
+		pubDateStr:      "Fri, 02 Jan 2015 00:00:00 +0000",
+		enclosureURL:    "http://www.example-podcast.com/my-podcast/2/episode-two",
+		enclosureLength: "56445",
+		enclosureType:   "WAV",
+		duration:        time.Second * 94,
+		durationStr:     "1:34",
+	},
+	{
+		title:             "Item 3",
+		guid:              "http://www.example-podcast.com/my-podcast/3/episode",
+		pubDate:           time.Date(2015, time.January, 3, 0, 0, 0, 0, time.UTC),
+		pubDateStr:        "Thu, 01 Jan 2015 00:00:00 +0000",
+		enclosureURL:      "http://www.example-podcast.com/my-podcast/3/episode-three",
+		enclosureLength:   "1234",
+		enclosureType:     "MP3",
+		descriptionStr:    "A short description of the podcast episode",
+		encodedContentStr: "<h1>Item 3</h1><p>A <em>longer</em> description of the podcast, specifically designed for embedded HTML.</p>",
+	},
+}
 
 func TestContainsXmlHeader(t *testing.T) {
 	podcast := &Podcast{}
@@ -371,21 +369,47 @@ func validatePodcastItem(t *testing.T, data string, item *testItem) {
 	if want := fmt.Sprintf("<pubDate>%v</pubDate>", item.pubDateStr); !strings.Contains(data, want) {
 		t.Errorf("expected %v to contain %v", data, want)
 	}
-	if want := fmt.Sprintf(`<enclosure url="%v" length="%v" type="%v"></enclosure>`, item.enclosureURL, item.enclosureLength, item.enclosureType); !strings.Contains(data, want) {
+	if want := fmt.Sprintf(
+		`<enclosure url="%v" length="%v" type="%v"></enclosure>`,
+		item.enclosureURL,
+		item.enclosureLength,
+		item.enclosureType,
+	); !strings.Contains(
+		data,
+		want,
+	) {
 		t.Errorf("expected %v to contain %v", data, want)
 	}
 	if item.durationStr != "" {
-		if want := fmt.Sprintf("<itunes:duration>%v</itunes:duration>", item.durationStr); !strings.Contains(data, want) {
+		if want := fmt.Sprintf(
+			"<itunes:duration>%v</itunes:duration>",
+			item.durationStr,
+		); !strings.Contains(
+			data,
+			want,
+		) {
 			t.Errorf("expected %v to contain %v", data, want)
 		}
 	}
 	if item.descriptionStr != "" {
-		if want := fmt.Sprintf("<description><![CDATA[%v]]></description>", item.descriptionStr); !strings.Contains(data, want) {
+		if want := fmt.Sprintf(
+			"<description><![CDATA[%v]]></description>",
+			item.descriptionStr,
+		); !strings.Contains(
+			data,
+			want,
+		) {
 			t.Errorf("expected %v to contain %v", data, want)
 		}
 	}
 	if item.encodedContentStr != "" {
-		if want := fmt.Sprintf("<content:encoded><![CDATA[%v]]></content:encoded>", item.encodedContentStr); !strings.Contains(data, want) {
+		if want := fmt.Sprintf(
+			"<content:encoded><![CDATA[%v]]></content:encoded>",
+			item.encodedContentStr,
+		); !strings.Contains(
+			data,
+			want,
+		) {
 			t.Errorf("expected %v to contain %v", data, want)
 		}
 	}

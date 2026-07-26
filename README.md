@@ -132,3 +132,29 @@ Which gives us this XML output:
 ## Options
 
 For further options and configuration, please see the [options docs](./docs/options.md).
+
+## Development
+
+This project uses [mise](https://mise.jdx.dev/) for task running and tool version management, and [hk](https://hk.jdx.dev/) for linting and formatting.
+Run `mise tasks` to see everything available.
+
+| Task                         | Description                                              |
+| ---------------------------- | -------------------------------------------------------- |
+| `mise run test`              | Runs all tests with the race detector                    |
+| `mise run golang:test-cover` | Runs the tests with coverage, writing reports to `./.out` |
+| `mise run golang:bench`      | Runs all benchmarks                                      |
+| `mise run fix-all`           | Applies all formatters and auto-fixable linters          |
+| `mise run check-all`         | Runs all linters without fixing                          |
+| `mise run ci`                | Runs the full CI pipeline — linting and tests            |
+
+The `fix` and `check` tasks operate on uncommitted changes only, `fix-pr` and `check-pr` on the changes in the current branch, and `fix-all` and `check-all` on the whole repository.
+Linters are also wired to git hooks through `.config/hk.pkl`: fast formatters on pre-commit, golangci-lint as well on pre-push.
+
+### Releases
+
+Releases are cut by [release-please](https://github.com/googleapis/release-please), which keeps a release PR open on `main` and tags a version whenever that PR is merged.
+Commit messages therefore need to follow [conventional commits](https://www.conventionalcommits.org/), as PR titles are linted to enforce.
+
+Renovate raises dependency updates daily and automerges stable non-major ones.
+Because those bumps alone would never merge the release PR, a scheduled job merges it on the first of every month, so consumers of this library reliably pick up dependency updates.
+The release PR can also be merged by hand, or the monthly job run early through the "Monthly Release" workflow's `workflow_dispatch` trigger.

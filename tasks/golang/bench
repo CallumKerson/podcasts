@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+#MISE description="Runs all benchmarks"
+
+set -ex
+
+go test -bench=. -benchmem ./...

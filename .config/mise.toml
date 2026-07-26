@@ -1,0 +1,38 @@
+[tools]
+"github:golangci/golangci-lint" = "2.12.2"
+go = "1.26.5"
+hk = "latest"
+typos = "latest"
+rumdl = "latest"
+oxfmt = { depends = "aube", "version" = "latest" }
+aube = "latest"
+"go:github.com/ctrf-io/go-ctrf-json-reporter/cmd/go-ctrf-json-reporter" = "latest"
+
+[task_config]
+includes = ["tasks"]
+
+[tasks.check]
+run = "hk check --no-fail-fast"
+
+[tasks.check-pr]
+run = "hk check --from-ref origin/main --to-ref HEAD --no-fail-fast"
+
+[tasks.check-all]
+run = "hk check --all --no-fail-fast"
+
+[tasks.fix]
+run = "hk fix --no-fail-fast"
+
+[tasks.fix-pr]
+run = "hk fix --from-ref origin/main --to-ref HEAD --no-fail-fast"
+
+[tasks.fix-all]
+run = "hk fix --all --no-fail-fast"
+
+[tasks.test]
+description = "Runs all tests"
+depends = ["*:test"]
+
+[tasks.ci]
+description = "Runs all CI checks - lint and test"
+depends = ["check-pr", "golang:mod-tidy-check", "golang:test-ctrf"]

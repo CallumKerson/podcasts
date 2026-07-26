@@ -205,11 +205,16 @@ func createTestPodcast(episodeCount int) *Podcast {
 
 	for episodeNum := 1; episodeNum <= episodeCount; episodeNum++ {
 		podcast.AddItem(&Item{
-			Title:       fmt.Sprintf("Episode %d: Performance Testing", episodeNum),
-			GUID:        fmt.Sprintf("https://example.com/episode-%d", episodeNum),
-			PubDate:     NewPubDate(time.Date(2024, 1, (episodeNum%28)+1, 12, 0, 0, 0, time.UTC)),
-			Duration:    NewDuration(time.Minute * time.Duration(20+(episodeNum%40))),
-			Description: &CDATAText{Value: fmt.Sprintf("This is episode %d of our performance testing podcast. It contains detailed information about performance optimization.", episodeNum)},
+			Title:    fmt.Sprintf("Episode %d: Performance Testing", episodeNum),
+			GUID:     fmt.Sprintf("https://example.com/episode-%d", episodeNum),
+			PubDate:  NewPubDate(time.Date(2024, 1, (episodeNum%28)+1, 12, 0, 0, 0, time.UTC)),
+			Duration: NewDuration(time.Minute * time.Duration(20+(episodeNum%40))),
+			Description: &CDATAText{
+				Value: fmt.Sprintf(
+					"This is episode %d of our performance testing podcast. It contains detailed information about performance optimization.",
+					episodeNum,
+				),
+			},
 			Enclosure: &Enclosure{
 				URL:    fmt.Sprintf("https://example.com/episodes/episode-%d.mp3", episodeNum),
 				Length: fmt.Sprintf("%d", 1000000+(episodeNum*50000)),

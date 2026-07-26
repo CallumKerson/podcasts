@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#MISE description="Tidies go.mod and go.sum"
+#MISE sources=["go.mod", "go.sum"]
+#MISE outputs={auto = true}
+
+set -ex
+
+go mod tidy

@@ -63,7 +63,6 @@ func TestCompleteIntegration(t *testing.T) {
 		Owner("Test Owner", "test@example.com"),
 		Image("https://example.com/podcast-artwork.jpg"),
 	)
-
 	if err != nil {
 		t.Fatalf("Failed to create feed: %v", err)
 	}
