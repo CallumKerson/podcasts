@@ -5,9 +5,9 @@
 # bumps out to consumers such as Athenaeum, which otherwise would only see a new
 # version when a feature happened to be released.
 #
-# This must run with a PAT rather than GITHUB_TOKEN: a push made with
-# GITHUB_TOKEN does not trigger workflows, so the main build would not run and
-# release-please would never tag the release.
+# This must run with the release app token rather than GITHUB_TOKEN: a push
+# made with GITHUB_TOKEN does not trigger workflows, so the main build would not
+# run and release-please would never tag the release.
 
 set -euo pipefail
 
