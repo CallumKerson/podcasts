@@ -143,9 +143,8 @@ v2 requires Go 1.25 or newer, and the import path gains a `/v2` suffix:
 import "github.com/CallumKerson/podcasts/v2"
 ```
 
-The performance API was removed after benchmarking showed it made feed
-generation no faster. `Feed.Write` and `Feed.XML` are unchanged; wrap the writer
-where buffering matters:
+The performance API was removed after benchmarking showed it made feed generation no faster.
+`Feed.Write` and `Feed.XML` are unchanged; wrap the writer where buffering matters:
 
 ```go
 // before
@@ -197,6 +196,6 @@ Linters are also wired to git hooks through `.config/hk.pkl`: fast formatters on
 Releases are cut by [release-please](https://github.com/googleapis/release-please), which keeps a release PR open on `main` and tags a version whenever that PR is merged.
 Commit messages therefore need to follow [conventional commits](https://www.conventionalcommits.org/), as PR titles are linted to enforce.
 
-Renovate raises dependency updates daily and automerges stable non-major ones.
+Renovate raises dependency updates weekly and automerges stable non-major ones.
 Because those bumps alone would never merge the release PR, a scheduled job merges it on the first of every month, so consumers of this library reliably pick up dependency updates.
 The release PR can also be merged by hand, or the monthly job run early through the "Monthly Release" workflow's `workflow_dispatch` trigger.
